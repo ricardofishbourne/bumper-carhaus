@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bumper Pro – Proyecto de Pagos Integrados para CarHaus</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #185FA5; --blue-light: #E6F1FB;
+    --green: #1D9E75; --green-light: #E1F5EE;
+    --text: #1a1a1a; --text-sec: #6b6b6b; --text-ter: #9a9a9a;
+    --bg: #ffffff; --bg-sec: #f7f7f5; --border: rgba(0,0,0,0.12);
+    --radius: 10px; --radius-sm: 6px;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); background: #f4f4f0; min-height: 100vh; padding: 2rem 1rem; }
+  .wrapper { max-width: 700px; margin: 0 auto; background: var(--bg); border-radius: 16px; border: 0.5px solid var(--border); overflow: hidden; }
+  .header { background: #0d3d6e; padding: 2rem 2rem 1.5rem; color: #fff; }
+  .header .logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .header .tagline { font-size: 13px; opacity: 0.65; margin-bottom: 1.2rem; }
+  .header h1 { font-size: 20px; font-weight: 500; line-height: 1.4; }
+  .body { padding: 1.5rem 2rem 2rem; }
+  .greeting { font-size: 15px; line-height: 1.7; margin-bottom: 1.5rem; }
+  .section { margin-bottom: 1.8rem; }
+  .label { font-size: 11px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; font-weight: 500; }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; }
+  .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+  .metric { background: var(--bg-sec); border-radius: var(--radius-sm); padding: 12px 14px; }
+  .metric .val { font-size: 20px; font-weight: 500; margin-top: 3px; }
+  .metric .lbl { font-size: 11px; color: var(--text-sec); line-height: 1.4; }
+  .phase-row { display: flex; gap: 0; margin-bottom: 1rem; border-radius: var(--radius-sm); overflow: hidden; border: 0.5px solid var(--border); }
+  .phase-btn { flex: 1; padding: 9px 4px; font-size: 13px; background: var(--bg-sec); border: none; border-right: 0.5px solid var(--border); cursor: pointer; color: var(--text-sec); transition: all 0.15s; font-family: inherit; }
+  .phase-btn:last-child { border-right: none; }
+  .phase-btn.active { background: var(--blue); color: #fff; font-weight: 500; }
+  .phase-detail { display: none; }
+  .phase-detail.active { display: block; }
+  .feature-list { list-style: none; }
+  .feature-list li { padding: 8px 0; border-bottom: 0.5px solid var(--border); font-size: 14px; display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .feature-list li:last-child { border-bottom: none; }
+  .check { color: var(--green); font-size: 16px; flex-shrink: 0; font-weight: 700; }
+  .price-tag .amount { font-size: 26px; font-weight: 500; color: var(--blue); }
+  .price-tag .per { font-size: 13px; color: var(--text-sec); }
+  .increment { font-size: 11px; background: var(--blue-light); color: var(--blue); padding: 2px 8px; border-radius: 20px; display: inline-block; margin-left: 6px; }
+  .rate-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .rate-table th { text-align: left; font-weight: 500; font-size: 11px; color: var(--text-sec); padding: 6px 10px; border-bottom: 0.5px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
+  .rate-table td { padding: 10px; border-bottom: 0.5px solid var(--border); }
+  .rate-table tr:last-child td { border-bottom: none; }
+  .saving { color: var(--green); font-weight: 500; }
+  .old { color: var(--text-ter); text-decoration: line-through; }
+  .new { color: var(--blue); font-weight: 500; }
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 1.5rem 0; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+  .badge-green { background: var(--green-light); color: #0F6E56; }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .compare-card { border-radius: var(--radius-sm); padding: 14px; border: 0.5px solid var(--border); }
+  .compare-title { font-size: 13px; font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .slider-row label { font-size: 13px; color: var(--text-sec); min-width: 110px; }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--blue); }
+  .slider-row .val { font-size: 13px; font-weight: 500; min-width: 80px; text-align: right; }
+  .summary-box { background: var(--bg-sec); border-radius: var(--radius-sm); padding: 14px; margin-top: 10px; }
+  .summary-box .big { font-size: 22px; font-weight: 500; color: var(--blue); }
+  .summary-box .saving-highlight { font-size: 13px; color: var(--green); margin-top: 4px; }
+  .key-point { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; line-height: 1.6; }
+  .key-point svg { flex-shrink: 0; margin-top: 2px; }
+  .timeline { position: relative; padding-left: 22px; }
+  .timeline::before { content: ''; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 1px; background: var(--border); }
+  .timeline-item { position: relative; margin-bottom: 14px; font-size: 14px; line-height: 1.5; }
+  .timeline-dot { position: absolute; left: -19px; top: 3px; width: 10px; height: 10px; border-radius: 50%; background: var(--blue); border: 2px solid #fff; outline: 1px solid var(--blue); }
+  .timeline-item p { font-size: 13px; color: var(--text-sec); margin-top: 3px; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 0.5px solid var(--border); margin-top: 8px; font-size: 14px; }
+  .total-row .val { font-size: 15px; font-weight: 500; }
+  .cta-row { display: flex; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap; }
+  .cta-btn { padding: 11px 20px; font-size: 14px; border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; font-weight: 400; text-decoration: none; display: inline-block; }
+  .cta-primary { background: var(--blue); color: #fff; border: none; }
+  .cta-secondary { background: transparent; color: var(--text); border: 0.5px solid var(--border); }
+  .footer { background: var(--bg-sec); border-top: 0.5px solid var(--border); padding: 1rem 2rem; font-size: 12px; color: var(--text-sec); }
+  @media (max-width: 520px) {
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    .body { padding: 1rem 1.25rem 1.5rem; }
+    .header { padding: 1.5rem 1.25rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="logo">BUMPER</div>
+    <div class="tagline">Transformando la forma en que pagamos</div>
+    <h1>Bumper Pro — Proyecto de Pagos Integrados para CarHaus</h1>
+  </div>
+
+  <div class="body">
+    <div class="greeting">
+      <strong>Hola Felipe y Rubén,</strong><br><br>
+      Espero que estéis bien. Os compartimos un resumen interactivo de la propuesta Bumper Pro para que podáis explorar las opciones de pago, costes y modelo de despliegue a vuestro ritmo.
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric"><div class="lbl">Ahorro pago fraccionado</div><div class="val" style="color:#1D9E75;">hasta 19%</div></div>
+      <div class="metric"><div class="lbl">Coste TPV (sin cambios)</div><div class="val">0,30%</div></div>
+      <div class="metric"><div class="lbl">Pago único</div><div class="val">1%</div></div>
+      <div class="metric"><div class="lbl">Centros cubiertos</div><div class="val">6</div></div>
+    </div>
+
+    <div class="section">
+      <div class="label">1. Visión general</div>
+      <div class="card">
+        <div class="key-point">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span>Todos los pagos quedan automáticamente vinculados a cada transacción en ASWIN V7.</span>
+        </div>
+        <div class="key-point">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>Se eliminan tareas manuales y errores. Conciliación y reporting centralizados.</span>
+        </div>
+        <div class="key-point">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <span>Aplica tanto a pagos digitales (enlace) como a TPV presencial, en un mismo flujo.</span>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="label">2. Diferencia clave: pasarela vs TPV</div>
+      <div class="two-col">
+        <div class="compare-card">
+          <div class="compare-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Pago por enlace <span class="badge badge-blue">1%</span>
+          </div>
+          <ul class="feature-list">
+            <li><span class="check">✓</span>Pagos remotos / no presenciales</li>
+            <li><span class="check">✓</span>Comisión: 1% por transacción</li>
+            <li><span class="check">✓</span>Enviado desde Bumper, registrado en ASWIN</li>
+            <li><span class="check">✓</span>Ideal para VN/VO, donde el proceso de venta ocurre fuera del DMS</li>
+          </ul>
+          <div style="margin-top:8px;padding:7px 10px;background:#E6F1FB;border-radius:6px;font-size:12px;color:#185FA5;line-height:1.5;">
+            Próximamente también disponible vía <strong>Bizum</strong> — coste por transacción competitivo
+          </div>
+        </div>
+        <div class="compare-card" style="border-color:#1D9E75;">
+          <div class="compare-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            TPV físico <span class="badge badge-green">0,30%</span>
+          </div>
+          <ul class="feature-list">
+            <li><span class="check">✓</span>Vuestra tarifa bancaria actual, sin cambios</li>
+            <li><span class="check">✓</span>Bumper no añade ningún margen</li>
+            <li><span class="check">✓</span>Totalmente integrado con ASWIN V7</li>
+          </ul>
+        </div>
+      </div>
+      <p style="margin-top:8px;font-size:13px;color:var(--text-sec);">El 1% aplica <strong>únicamente</strong> al pago por enlace, nunca al TPV.</p>
+      <div style="margin-top:10px;background:#f7f7f5;border-radius:8px;padding:12px 14px;font-size:13px;color:#6b6b6b;line-height:1.6;">
+        <strong style="color:#1a1a1a;">&#128161; Sobre el coste del pago por enlace:</strong> Dado que el datáfono/tablet es el canal principal de cobro en CarHaus, el volumen de pagos remotos representa una parte reducida del total. El impacto real del 1% es por tanto limitado. Además, próximamente ofreceremos <strong style="color:#1a1a1a;">Bizum</strong> como alternativa de pago remoto, con un coste por transacción competitivo, actualmente en fase de confirmación.
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="label">3. Modelo de despliegue por fases — explorar</div>
+      <div class="phase-row">
+        <button class="phase-btn active" onclick="selectPhase(1)">Fase 1</button>
+        <button class="phase-btn" onclick="selectPhase(2)">Fase 2</button>
+        <button class="phase-btn" onclick="selectPhase(3)">Fase 3</button>
+        <button class="phase-btn" onclick="selectPhase(4)">Fase 4</button>
+      </div>
+      <div id="phase-1" class="phase-detail active card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span class="price-tag"><span class="amount">250€</span><span class="per">/centro/mes</span></span>
+          <span class="badge badge-blue">Punto de entrada</span>
+        </div>
+        <ul class="feature-list">
+          <li><span class="check">✓</span>Pago fraccionado con tarifas reducidas (media 6,75%)</li>
+          <li><span class="check">✓</span>Pago único al 1%</li>
+          <li><span class="check">✓</span>PayLinks conectados a ASWIN V7</li>
+          <li><span class="check">✓</span>Portal Bumper</li>
+        </ul>
+        <div style="margin-top:12px;font-size:13px;color:var(--text-sec);">Total con 6 centros: <strong style="color:var(--text);">1.500€/mes</strong></div>
+      </div>
+      <div id="phase-2" class="phase-detail card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span class="price-tag"><span class="amount">300€</span><span class="per">/centro/mes</span></span>
+          <span class="increment">+50€ vs fase 1</span>
+        </div>
+        <ul class="feature-list">
+          <li><span class="check">✓</span>Todo lo de Fase 1</li>
+          <li><span class="check">✓</span>Conciliación automática de pagos digitales</li>
+          <li><span class="check">✓</span>Matching de pagos con facturas en ASWIN V7</li>
+          <li><span class="check">✓</span>Reporting financiero (Excel y PowerBI)</li>
+        </ul>
+        <div style="margin-top:12px;font-size:13px;color:var(--text-sec);">Total con 6 centros: <strong style="color:var(--text);">1.800€/mes</strong></div>
+      </div>
+      <div id="phase-3" class="phase-detail card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span class="price-tag"><span class="amount">400€</span><span class="per">/centro/mes</span></span>
+          <span class="increment">+100€ vs fase 2</span>
+        </div>
+        <ul class="feature-list">
+          <li><span class="check">✓</span>Todo lo de Fase 2</li>
+          <li><span class="check">✓</span>Hasta 4 TPVs físicos por centro (Android 4G/WiFi)</li>
+          <li><span class="check">✓</span>Cobro directo con envío automático a ASWIN V7</li>
+          <li><span class="check">✓</span>Eliminación total del input manual</li>
+        </ul>
+        <div style="margin-top:12px;font-size:13px;color:var(--text-sec);">Terminal adicional: <strong>25€/mes</strong> · Total con 6 centros: <strong style="color:var(--text);">2.400€/mes</strong></div>
+      </div>
+      <div id="phase-4" class="phase-detail card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span class="price-tag"><span class="amount">450€</span><span class="per">/centro/mes</span></span>
+          <span class="increment">+50€ vs fase 3</span>
+        </div>
+        <ul class="feature-list">
+          <li><span class="check">✓</span>Todo lo de Fase 3</li>
+          <li><span class="check">✓</span>TPVs conectados directamente a vuestro banco/adquirente</li>
+          <li><span class="check">✓</span>Se mantiene exactamente el 0,30% bancario — Bumper no añade comisiones</li>
+          <li><span class="check">✓</span>Cada cobro queda registrado e integrado en ASWIN V7</li>
+        </ul>
+        <div style="margin-top:12px;padding:10px 12px;background:#FAEEDA;border-radius:6px;font-size:13px;color:#854F0B;line-height:1.6;">
+          <strong>Nota importante:</strong> En esta fase, los TPVs procesan los pagos a través de vuestro banco, por lo que la <strong>conciliación automática no estará disponible</strong>. Para beneficiarse de la reconciliación automática completa, es necesario operar con Bumper como adquirente (Fase 3). Podemos ayudaros a evaluar qué opción encaja mejor con vuestra operativa.
+        </div>
+        <div style="margin-top:12px;font-size:13px;color:var(--text-sec);">Total con 6 centros: <strong style="color:var(--text);">2.700€/mes</strong></div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="label">Calculadora de ahorro — pago fraccionado</div>
+      <div class="card">
+        <div class="slider-row">
+          <label>Volumen mensual</label>
+          <input type="range" id="vol" min="10000" max="500000" step="5000" value="100000" oninput="calcSaving()">
+          <span class="val" id="vol-out">100.000€</span>
+        </div>
+        <div class="slider-row">
+          <label>Plazo medio</label>
+          <input type="range" id="plazo" min="1" max="3" step="1" value="1" oninput="calcSaving()">
+          <span class="val" id="plazo-out">3 meses</span>
+        </div>
+        <div class="summary-box">
+          <div style="font-size:13px;color:var(--text-sec);margin-bottom:6px;">Ahorro mensual estimado con Bumper Pro</div>
+          <div class="big" id="saving-val">1.300€</div>
+          <div class="saving-highlight" id="saving-pct">Pasáis del 6,75% al 5,45% · ahorro de hasta el 19%</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="label">4. Tarifas de pago fraccionado — nuevo vs actual</div>
+      <div class="card">
+        <table class="rate-table">
+          <thead><tr><th>Plazo</th><th>Tarifa actual</th><th>Propuesta Bumper</th><th>Descuento</th></tr></thead>
+          <tbody>
+            <tr><td>3 meses</td><td class="old">6,75%</td><td class="new">5,45%</td><td class="saving">19%</td></tr>
+            <tr><td>4 meses</td><td class="old">7,50%</td><td class="new">6,45%</td><td class="saving">14%</td></tr>
+            <tr><td>6 meses</td><td class="old">8,75%</td><td class="new">8,35%</td><td class="saving">5%</td></tr>
+          </tbody>
+        </table>
+        <div class="total-row">
+          <span style="color:var(--text-sec);">Ahorro máximo</span>
+          <span class="val"><span style="color:var(--green);">hasta un 19%</span> <span style="font-size:13px;color:var(--text-sec);">(plazo 3 meses)</span></span>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="label">5. Dispositivos: dos caminos claros</div>
+      <div class="two-col" style="margin-bottom:10px;">
+        <div class="compare-card" style="border-color:#1D9E75;">
+          <div class="compare-title" style="color:#1D9E75;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            Opción A — Terminales Bumper
+          </div>
+          <ul class="feature-list">
+            <li><span class="check">&#10003;</span>Disponible hoy, ya integrados y certificados</li>
+            <li><span class="check">&#10003;</span>Android 4G/WiFi, NFC, hasta 4 por centro</li>
+            <li><span class="check">&#10003;</span>Integración completa con ASWIN V7 desde el primer día</li>
+            <li><span class="check">&#10003;</span>Sin trabajo de desarrollo ni validación adicional</li>
+          </ul>
+          <div style="margin-top:10px;font-size:12px;background:#E1F5EE;color:#0F6E56;padding:6px 10px;border-radius:6px;">Recomendado para arrancar rápido y sin riesgo</div>
+        </div>
+        <div class="compare-card" style="border-color:#EF9F27;">
+          <div class="compare-title" style="color:#854F0B;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF9F27" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>
+            Opción B — Tablets propias (SoftPOS)
+          </div>
+          <ul class="feature-list">
+            <li><span style="color:#EF9F27;font-weight:700;flex-shrink:0;">&#9675;</span>Factible técnicamente vía PayTef + Redsys/Ceca</li>
+            <li><span style="color:#EF9F27;font-weight:700;flex-shrink:0;">&#9675;</span>Requiere SDKs de PayTef para cada modelo de tablet</li>
+            <li><span style="color:#EF9F27;font-weight:700;flex-shrink:0;">&#9675;</span>Validación make/model necesaria antes de confirmar plazos</li>
+            <li><span style="color:#EF9F27;font-weight:700;flex-shrink:0;">&#9675;</span>Desarrollo conjunto si es un requisito no negociable</li>
+          </ul>
+          <div style="margin-top:10px;font-size:12px;background:#FAEEDA;color:#854F0B;padding:6px 10px;border-radius:6px;">En desarrollo — plazos a confirmar tras validación técnica</div>
+        </div>
+      </div>
+      <div class="card" style="background:#f7f7f5;font-size:13px;color:#6b6b6b;line-height:1.6;">
+        Si el uso de vuestras tablets propias es un requisito no negociable, estamos dispuestos a desarrollarlo conjuntamente. El punto de partida sería que nos compartáis los modelos de dispositivo para iniciar la validación con PayTef.
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+    <hr class="divider">
+
+    <div class="section">
+      <div class="label">6. Gestión del efectivo</div>
+      <div class="card" style="border-left: 3px solid #EF9F27;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="flex-shrink:0;margin-top:2px;color:#EF9F27;font-size:20px;font-weight:700;">!</div>
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:6px;">El efectivo permanece en ASWIN como fuente de verdad</div>
+            <p style="font-size:13px;color:#6b6b6b;line-height:1.6;">Bumper gestiona únicamente pagos digitales. Las transacciones en efectivo (caja / arqueo) continuarán gestionándose íntegramente dentro de ASWIN V7 y no aparecerán en la plataforma Bumper ni en sus informes.</p>
+            <p style="font-size:13px;color:#6b6b6b;line-height:1.6;margin-top:8px;">Para una vista unificada incluyendo efectivo, la opción más viable es combinar el reporting de Bumper (digital) con los informes de caja de ASWIN — por ejemplo, mediante un dashboard conjunto en PowerBI.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="label">7. Visibilidad de pagos — qué veis y dónde</div>
+      <div class="card">
+        <p style="font-size:13px;color:#6b6b6b;margin-bottom:12px;line-height:1.6;">Todos los pagos realizados a través de la plataforma Bumper tienen visibilidad completa en tiempo real — dashboard, informes diarios y PowerBI. El efectivo queda en ASWIN.</p>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:#f7f7f5;">
+                <th style="text-align:left;padding:8px 10px;border-bottom:0.5px solid rgba(0,0,0,0.12);font-weight:500;color:#6b6b6b;font-size:11px;text-transform:uppercase;">Método de pago</th>
+                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid rgba(0,0,0,0.12);font-weight:500;color:#6b6b6b;font-size:11px;text-transform:uppercase;">Dashboard Bumper</th>
+                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid rgba(0,0,0,0.12);font-weight:500;color:#6b6b6b;font-size:11px;text-transform:uppercase;">Informes diarios</th>
+                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid rgba(0,0,0,0.12);font-weight:500;color:#6b6b6b;font-size:11px;text-transform:uppercase;">PowerBI</th>
+                <th style="text-align:center;padding:8px 10px;border-bottom:0.5px solid rgba(0,0,0,0.12);font-weight:500;color:#6b6b6b;font-size:11px;text-transform:uppercase;">ASWIN V7</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);">Pago por enlace</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+              </tr>
+              <tr>
+                <td style="padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);">TPV Bumper (presencial)</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+              </tr>
+              <tr>
+                <td style="padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);">Pago fraccionado</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+                <td style="text-align:center;padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1D9E75;font-weight:700;">&#10003;</td>
+              </tr>
+              <tr>
+                <td style="padding:9px 10px;">Efectivo (caja/arqueo)</td>
+                <td style="text-align:center;padding:9px 10px;color:#9a9a9a;">—</td>
+                <td style="text-align:center;padding:9px 10px;color:#9a9a9a;">—</td>
+                <td style="text-align:center;padding:9px 10px;color:#9a9a9a;">—</td>
+                <td style="text-align:center;padding:9px 10px;color:#1D9E75;font-weight:700;">&#10003;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+            <div class="label">8. Recomendación para primera fase</div>
+      <div class="two-col" style="margin-bottom:12px;">
+        <div class="compare-card">
+          <div class="compare-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Cobros remotos
+          </div>
+          <p style="font-size:13px;color:var(--text-sec);">Pago por enlace para pagos no presenciales. Sencillo, inmediato, integrado.</p>
+        </div>
+        <div class="compare-card">
+          <div class="compare-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            Operativa diaria
+          </div>
+          <p style="font-size:13px;color:var(--text-sec);">TPVs integrados para cobros presenciales. Tarifa 0,30% sin cambios.</p>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg-sec);">
+        <p style="font-size:14px;line-height:1.7;">Con este enfoque unificáis todos los cobros en una sola plataforma, mantenéis vuestros costes actuales de tarjeta y mejoráis la eficiencia operativa sin fricción ni riesgo.</p>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <a href="mailto:oscar.llurba-garcia@bumper.co?subject=Propuesta%20Bumper%20Pro%20-%20CarHaus&body=Hola%20Oscar,%0A%0AMe%20gustaría%20agendar%20una%20sesión%20para%20revisar%20la%20propuesta." class="cta-btn cta-primary">Agendar sesión de revisión</a>
+      <a href="mailto:oscar.llurba-garcia@bumper.co?subject=Pregunta%20sobre%20Bumper%20Pro" class="cta-btn cta-secondary">Contactar con dudas</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <strong>Bumper IBERIA SL</strong> · contacto@bumper.co · (+34) 900 990 213<br>
+    P.º de la Castellana, 81, Tetuán, 28046 Madrid · CIF: B75324699
+  </div>
+</div>
+
+<script>
+function selectPhase(n) {
+  document.querySelectorAll('.phase-btn').forEach((b,i) => b.classList.toggle('active', i+1===n));
+  document.querySelectorAll('.phase-detail').forEach(d => d.classList.remove('active'));
+  document.getElementById('phase-'+n).classList.add('active');
+}
+const plazoData = {
+  1: { label: '3 meses', actual: 6.75, bumper: 5.45, saving: 1.30 },
+  2: { label: '4 meses', actual: 7.50, bumper: 6.45, saving: 1.05 },
+  3: { label: '6 meses', actual: 8.75, bumper: 8.35, saving: 0.40 },
+};
+function calcSaving() {
+  const vol = parseInt(document.getElementById('vol').value);
+  const p = parseInt(document.getElementById('plazo').value);
+  const d = plazoData[p];
+  const saving = vol * (d.saving / 100);
+  const pct = Math.round((d.actual - d.bumper) / d.actual * 100);
+  document.getElementById('vol-out').textContent = vol.toLocaleString('es-ES') + '€';
+  document.getElementById('plazo-out').textContent = d.label;
+  document.getElementById('saving-val').textContent = Math.round(saving).toLocaleString('es-ES') + '€';
+  document.getElementById('saving-pct').textContent = 'De ' + d.actual.toFixed(2) + '% a ' + d.bumper.toFixed(2) + '% · ahorro del ' + pct + '%';
+}
+</script>
+</body>
+</html>
